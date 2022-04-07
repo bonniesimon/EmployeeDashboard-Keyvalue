@@ -67,7 +67,8 @@ export class EmployeeService {
 
    public employeeLogin = async (
        username: string,
-       password: string
+       password: string,
+       role: string
      ) => {
        const employeeDetails = await this.employeeRepository.getEmployeeByUsername(
          username
@@ -77,13 +78,15 @@ export class EmployeeService {
        }
        if (await bcrypt.compare(password, employeeDetails.password)) {
          let payload = {
-           "custom:id": employeeDetails.id,
-           "custom:email": employeeDetails.username,
+           "id": employeeDetails.id,
+           "email": employeeDetails.username,
+           "role": role
          };
          const token = this.generateAuthToken(payload);
          return {
            idToken: token,
            employeeDetails,
+           role
          };
        } else {
          throw new IncorrectUsernameOrPasswordException();

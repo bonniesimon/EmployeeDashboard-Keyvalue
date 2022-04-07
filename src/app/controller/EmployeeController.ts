@@ -59,7 +59,7 @@ class EmployeeController extends AbstractController {
   }
 
   private login = async (request: RequestWithUser, response: Response, next: NextFunction) => {
-    const data = await this.employeeService.employeeLogin(request.body.username, request.body.password);
+    const data = await this.employeeService.employeeLogin(request.body.username, request.body.password, request.body.role);
     response.send(this.fmt.formatResponse(data, Date.now() - request.startTime, "OK")); 
   }
 
@@ -68,7 +68,6 @@ class EmployeeController extends AbstractController {
     response: Response,
     next: NextFunction
   ) => {
-    console.log("hai")
     const data = await this.employeeService.getAllEmployees();
     response.send(
       this.fmt.formatResponse(data, Date.now() - request.startTime, "OK")
