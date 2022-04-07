@@ -1,7 +1,9 @@
 import { NextFunction, Response } from "express";
 import multer from "multer";
+import { password } from "../config/rdbms";
 import APP_CONSTANTS from "../constants";
 import { CreateEmployeeDto } from "../dto/CreateEmployee";
+import authorize from "../middleware/authorize";
 import validationMiddleware from "../middleware/validationMiddleware";
 import { EmployeeService } from "../services/EmployeeService";
 import { AbstractController } from "../util/rest/controller";
@@ -21,8 +23,13 @@ class EmployeeController extends AbstractController {
   }
 
   protected initializeRoutes = (): void => {
+    this.router.post(
+      `${this.path}/login`,
+      this.asyncRouteHandler(this.login)
+    );
     this.router.get(
       `${this.path}`,
+      authorize(),
       this.asyncRouteHandler(this.getAllEmployees)
     );
     this.router.get(
@@ -33,7 +40,7 @@ class EmployeeController extends AbstractController {
       `${this.path}`,
       // validationMiddleware(CreateEmployeeDto, APP_CONSTANTS.body),
       // this.asyncRouteHandler(this.createEmployee)
-      this.createEmployee
+      this.asyncRouteHandler(this.createEmployee)
     );
     this.router.put(
       `${this.path}/:employeeId`,
@@ -51,11 +58,17 @@ class EmployeeController extends AbstractController {
     );
   }
 
+  private login = async (request: RequestWithUser, response: Response, next: NextFunction) => {
+    const data = await this.employeeService.employeeLogin(request.body.username, request.body.password);
+    response.send(this.fmt.formatResponse(data, Date.now() - request.startTime, "OK")); 
+  }
+
   private getAllEmployees = async (
     request: RequestWithUser,
     response: Response,
     next: NextFunction
   ) => {
+    console.log("hai")
     const data = await this.employeeService.getAllEmployees();
     response.send(
       this.fmt.formatResponse(data, Date.now() - request.startTime, "OK")
